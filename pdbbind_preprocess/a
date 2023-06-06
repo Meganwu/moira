@@ -1,1 +1,974 @@
+#from subprocess import call
 
+
+def get_center(pymol_model):
+    model=cmd.get_model(pymol_model)
+    a=[]
+    for i in range(len(model.atom)):
+        coord=model.atom[i].coord
+        a.append(coord)
+    a=np.array(a)
+    center=np.mean(a, axis=0)
+    return center
+
+def write_center(pdbid):
+    lig=pdbid+'_ligand.pdb'
+    cmd.load(lig)
+    pymol_model=pdbid+'_ligand'
+    center=get_center(pymol_model)
+    cmd.remove('all')
+    return center
+"step8_dock2_final.py" 171L, 6044C                                                                 1,1           Top
+(base) wunian@silexon239:~/master-github/md-ml-nian/PL-refine-analysis$ cd scripts_all/
+(base) wunian@silexon239:~/master-github/md-ml-nian/PL-refine-analysis/scripts_all$ ll
+total 2720
+drwxr-x---  2 wunian wunian    4096 Sep 25  2022 ./
+drwxr-x--- 39 wunian wunian   12288 Sep 25  2022 ../
+-rwxr-x---  1 wunian wunian     944 Sep 25  2022 step10-2.sh*
+-rwxr-x---  1 wunian wunian     965 Sep 25  2022 step10.sh*
+-rw-r-----  1 wunian wunian    6430 Sep 25  2022 step10_analysis_rmsd.py
+-rw-r-----  1 wunian wunian  389459 Sep 25  2022 step10_bad.txt
+-rw-r-----  1 wunian wunian 1951833 Sep 25  2022 step10_good.txt
+-rwxr-x---  1 wunian wunian     626 Sep 25  2022 step11-com-exist.sh*
+-rwxr-x---  1 wunian wunian     833 Sep 25  2022 step11-equil-exist.sh*
+-rwxr-x---  1 wunian wunian    1704 Sep 25  2022 step11-md-cal.sh*
+-rwxr-x---  1 wunian wunian    2023 Sep 25  2022 step11-md-pre.sh*
+-rwxr-x---  1 wunian wunian     279 Sep 25  2022 step11-md.sh*
+-rwxr-x---  1 wunian wunian     534 Sep 25  2022 step11-mv-again.sh*
+-rwxr-x---  1 wunian wunian     485 Sep 25  2022 step11-mvmdml.sh*
+-rwxr-x---  1 wunian wunian      87 Sep 25  2022 step11-total.sh*
+-rw-r-----  1 wunian wunian    1713 Sep 25  2022 step1_choose_pro_chain.py
+-rw-r-----  1 wunian wunian    1527 Sep 25  2022 step1_num_chain.py
+-rw-r-----  1 wunian wunian    1632 Sep 25  2022 step1_num_chain2.py
+-rw-r-----  1 wunian wunian    1578 Sep 25  2022 step2_center_pocket.py
+-rw-r-----  1 wunian wunian    4015 Sep 25  2022 step3_generate_conformer.py
+-rw-r-----  1 wunian wunian    4572 Sep 25  2022 step4_pre_dock_conf.py
+-rw-r-----  1 wunian wunian    4606 Sep 25  2022 step5_md_prepare_ligand.py
+-rw-r-----  1 wunian wunian     492 Sep 25  2022 step6_attach.sh
+-rw-r-----  1 wunian wunian     499 Sep 25  2022 step6_md_prepare_force.sh
+-rwxr-x---  1 wunian wunian     775 Sep 25  2022 step6_result.sh*
+-rwxr-x---  1 wunian wunian     240 Sep 25  2022 step6_submit_force.sh*
+-rw-r-----  1 wunian wunian  131245 Sep 25  2022 step7_bad.txt
+-rw-r-----  1 wunian wunian    4595 Sep 25  2022 step7_dock_prepare.py
+-rw-r-----  1 wunian wunian  139953 Sep 25  2022 step7_good.txt
+-rw-r-----  1 wunian wunian    6044 Sep 25  2022 step8_dock2_final.py
+-rw-r-----  1 wunian wunian    5815 Sep 25  2022 step8_dock2_result.py
+-rwxr-x---  1 wunian wunian     726 Sep 25  2022 step8_result.sh*
+-rwxr-x---  1 wunian wunian     360 Sep 25  2022 step9-mmpbsa-energy.sh*
+-rwxr-x---  1 wunian wunian    1718 Sep 25  2022 step9-mmpbsa-pre.sh*
+-rwxr-x---  1 wunian wunian    1738 Sep 25  2022 step9-mmpbsa.sh*
+(base) wunian@silexon239:~/master-github/md-ml-nian/PL-refine-analysis/scripts_all$ vi step1_choose_pro_chain.py
+(base) wunian@silexon239:~/master-github/md-ml-nian/PL-refine-analysis/scripts_all$ vi step8_dock2_final.py
+(base) wunian@silexon239:~/master-github/md-ml-nian/PL-refine-analysis/scripts_all$ cd ..
+(base) wunian@silexon239:~/master-github/md-ml-nian/PL-refine-analysis$ ll
+total 8967084
+drwxr-x---    39 wunian wunian      12288 Sep 25  2022  ./
+drwxrwxr-x    12 wunian wunian       4096 Aug 24  2022  ../
+drwxr-x---     3 wunian wunian       4096 Aug 13  2021  .data/
+drwxr-x---     2 wunian wunian       4096 Feb  9  2022  .ipynb_checkpoints/
+-rw-r-----     1 wunian wunian       2261 Nov 27  2021  10a_140_name.txt
+-rw-r-----     1 wunian wunian     162796 Aug 20  2021  1111.jpg
+-rw-rw-r--     1 wunian wunian      60637 Aug  7  2021  2019-7-29-results-aaaaa.txt
+-rw-rw-r--     1 wunian wunian         82 Aug  7  2021  2019-7-29-results-aaaaa2.txt
+-rw-r-----     1 wunian wunian    5528997 Aug 11  2021  2019-7-29-results-final-chs-seq-2.txt
+-rw-r-----     1 wunian wunian    5445677 Aug 10  2021  2019-7-29-results-final-chs-seq.txt
+-rw-r-----     1 wunian wunian        170 Aug 10  2021  2019-7-29-results-final-chs-test.txt
+-rw-r-----     1 wunian wunian     437206 Aug 10  2021  2019-7-29-results-final-chs.txt
+-rw-r-----     1 wunian wunian     502408 Aug 10  2021  2019-7-29-results-final-ddd.txt
+-rw-r-----     1 wunian wunian     298160 Aug  9  2021  2019-7-29-results-final-ddd3.txt
+-rw-r-----     1 wunian wunian    2087399 Aug  2  2021  2019-7-29-results-py.txt
+-rw-rw-r--     1 wunian wunian     308612 Jul 29  2021  2019-7-29-results.txt
+-rw-r-----     1 wunian wunian    5999047 Aug 12  2021  2019-results-final-chs-seq-2-aa.txt
+-rw-r-----     1 wunian wunian     339316 Oct  8  2021  2019-results-final-name-all.txt
+-rw-r-----     1 wunian wunian     374788 Oct  8  2021  2019-results-final-name-all_2.txt
+-rw-r-----     1 wunian wunian     427758 Oct  8  2021  2019-results-final-name-all_3.txt
+-rw-r-----     1 wunian wunian     811520 Apr 19  2021  2019_aff_uniprot.xlsx
+drwxr-x---     3 wunian wunian       4096 Nov  4  2021  2021-9-1-new/
+drwxr-x---     2 wunian wunian       4096 Aug 12  2021  2tpi-test-6/
+-rw-r-----     1 wunian wunian     236111 Nov 25  2021  4y8xalldock.zip
+-rw-r-----     1 wunian wunian     119143 May 13  2021  5e88_protein.pdb
+-rw-rw-r--     1 wunian wunian     227543 May 28  2021  8888.txt
+-rw-rw-r--     1 wunian wunian     260111 May 28  2021  999.txt
+-rw-rw-r--     1 wunian wunian      16815 May 28  2021  999ggg.txt
+-rw-rw-r--     1 wunian wunian       4410 Oct  9  2021  AlphaFoldClient.ipynb
+-rw-r-----     1 wunian wunian        897 Aug 26  2021  AlphaFoldClient.py
+-rw-r-----     1 wunian wunian    1387269 Apr 19  2021  INDEX_general_PL.2019
+-rw-r-----     1 wunian wunian    1014594 Sep  6  2021  INDEX_general_PL_data.2019
+-rw-r-----     1 wunian wunian     860631 Apr 19  2021  INDEX_general_PL_name.2019
+-rw-r-----     1 wunian wunian     277608 Apr 16  2021  INDEX_refined_data.2019
+-rw-r-----     1 wunian wunian    1014184 Apr 16  2021  PL_refine_2019
+-rw-r-----     1 wunian wunian     216764 Aug 10  2021  Untitled.ipynb
+-rw-r-----     1 wunian wunian     508902 Aug 13  2021  Untitled1.ipynb
+-rw-r-----     1 wunian wunian      40447 Aug 13  2021  Untitled2.ipynb
+-rw-r-----     1 wunian wunian       9867 Aug 15  2021  Untitled3.ipynb
+-rw-r-----     1 wunian wunian       7022 Aug 20  2021  Untitled4.ipynb
+-rw-r-----     1 wunian wunian      62238 Sep 23  2021  Untitled5.ipynb
+-rw-r-----     1 wunian wunian        574 Feb  9  2022  Untitled6.ipynb
+drwxr-x---     3 wunian wunian       4096 Aug 10  2021  __MACOSX/
+-rw-rw-r--     1 wunian wunian         69 Jun 11  2021  aa.sh
+-rw-r-----     1 wunian wunian   10194514 Apr 29  2021  aaa.ipynb
+-rw-r-----     1 wunian wunian     106729 Aug 20  2021  aaa.pdb
+-rw-r-----     1 wunian wunian     457731 Aug  7  2021  aaaa-non.txt
+-rw-r-----     1 wunian wunian    1076445 Sep  5  2021  aaabbb.txt
+-rwxr-x---     1 wunian wunian        605 Mar 22  2022  abcmove.sh*
+drwxr-x---     3 wunian wunian       4096 Nov 27  2021  all_140_dock/
+-rw-r-----     1 wunian wunian   17026999 Nov 27  2021  all_140_dock.zip
+drwxr-x---     2 wunian wunian       4096 Jun  3  2022  all_1kpm_rmsd/
+-rw-r-----     1 wunian wunian     249520 Jun  3  2022  all_1kpm_rmsd.zip
+-rw-r-----     1 wunian wunian     196197 Jun  3  2022  all_4xtx_rmsd.zip
+-rw-r-----     1 wunian wunian    1386856 Apr 21  2021  all_data_2019.txt
+-rw-rw-r--     1 wunian wunian       5376 May  8  2021  bad_step6.txt
+-rw-rw-r--     1 wunian wunian       5117 May  9  2021  bad_step666.txt
+-rw-r-----     1 wunian wunian     402706 Aug  8  2021  bbbb-non.txt
+-rw-rw-r--     1 wunian wunian        756 Oct 27  2021  ccc-126.txt
+-rw-r-----     1 wunian wunian     185416 Aug  8  2021  ccc-non.txt
+-rw-rw-r--     1 wunian wunian        445 Oct 27  2021  ccc_89.txt
+-rwxrwxr-x     1 wunian wunian        481 May 11  2021  ce_step6.sh*
+-rwxrwxr-x     1 wunian wunian        518 May 16  2021  center00_step6.sh*
+-rwxrwxr-x     1 wunian wunian        492 May  9  2021  center01_step6.sh*
+-rwxrwxr-x     1 wunian wunian        492 May  9  2021  center02_step6.sh*
+-rwxrwxr-x     1 wunian wunian        492 May  9  2021  center03_step6.sh*
+-rwxrwxr-x     1 wunian wunian        492 May  9  2021  center04_step6.sh*
+-rwxrwxr-x     1 wunian wunian        492 May  9  2021  center05_step6.sh*
+-rwxrwxr-x     1 wunian wunian        492 May  9  2021  center06_step6.sh*
+-rwxrwxr-x     1 wunian wunian        492 May  9  2021  center07_step6.sh*
+-rwxrwxr-x     1 wunian wunian        492 May  9  2021  center08_step6.sh*
+-rwxrwxr-x     1 wunian wunian        492 May  9  2021  center09_step6.sh*
+-rwxrwxr-x     1 wunian wunian        492 May  9  2021  center20_step6.sh*
+-rwxrwxr-x     1 wunian wunian        492 May  9  2021  center21_step6.sh*
+-rwxrwxr-x     1 wunian wunian        492 May  9  2021  center22_step6.sh*
+-rwxrwxr-x     1 wunian wunian        492 May  9  2021  center23_step6.sh*
+-rw-rw-r--     1 wunian wunian    1303319 Apr 25  2021  center_good.txt
+drwxrwxr-x     2 wunian wunian       4096 May 10  2021  center_good_divide/
+-rw-rw-r--     1 wunian wunian      88220 Apr 25  2021  center_good_list.txt
+-rw-rw-r--     1 wunian wunian     382795 May 13  2021  chains222_step1.txt
+-rw-rw-r--     1 wunian wunian     379081 May 13  2021  chains_step1.txt
+-rwxr-x---     1 wunian wunian        534 Feb  9  2022  cmd_2a.sh*
+-rw-r-----     1 wunian wunian       3045 Feb  9  2022  cmd_2a.txt
+-rw-r-----     1 wunian wunian      58926 Jul  7  2021  com_11_bad.txt
+-rw-r-----     1 wunian wunian      46809 Aug 15  2021  com_equil_bad.txt
+-rw-r-----     1 wunian wunian      15211 Oct 27  2021  com_equil_bad1773.txt
+-rw-r-----     1 wunian wunian      35798 Sep  6  2021  com_equil_bad22.txt
+-rw-r-----     1 wunian wunian      18025 Oct 15  2021  com_equil_bad333.txt
+-rw-r-----     1 wunian wunian      12649 Nov  5  2021  com_equil_bad8888.txt
+-rw-r-----     1 wunian wunian      18025 Aug 15  2021  com_equil_good.txt
+-rw-r-----     1 wunian wunian      49616 Oct 27  2021  com_equil_good1773.txt
+-rw-r-----     1 wunian wunian      29029 Sep  6  2021  com_equil_good22.txt
+-rw-r-----     1 wunian wunian      40116 Oct 15  2021  com_equil_good333.txt
+-rw-r-----     1 wunian wunian      52178 Nov  5  2021  com_equil_good8888.txt
+-rw-r-----     1 wunian wunian   11263450 Aug  8  2021  com_par-Copy1.ipynb
+-rw-rw-r--     1 wunian wunian   11263450 Aug  8  2021  com_par.ipynb
+-rw-r-----     1 wunian wunian   11602083 Aug 11  2021  com_par2.ipynb
+-rw-r-----     1 wunian wunian       7038 Aug  8  2021  com_par2.py
+-rw-r-----     1 wunian wunian       7065 Aug  8  2021  com_par3.py
+-rw-r-----     1 wunian wunian       7167 Aug  9  2021  com_par4.py
+-rw-r-----     1 wunian wunian       7169 Aug 10  2021  com_par4_test.py
+-rw-r-----     1 wunian wunian       7454 Aug 10  2021  com_par5.py
+-rw-r-----     1 wunian wunian       7642 Aug 11  2021  com_par5_s.py
+-rw-r-----     1 wunian wunian      12055 Nov 27  2021  comp_10a_140.txt
+-rwxr-x---     1 wunian wunian        437 Nov 27  2021  comp_140.sh*
+drwxr-x---   142 wunian wunian       4096 Nov 27  2021  comp_140_dock/
+-rw-rw-r--     1 wunian wunian       9973 Nov 27  2021  complement_10a_140.csv
+-rw-r-----     1 wunian wunian          0 May  3  2022  conf
+-rw-r-----     1 wunian wunian          0 May  3  2022  conf_extract.ipynb
+drwxr-x---     2 wunian wunian      12288 May  4  2022  conf_file/
+-rw-r-----     1 wunian wunian      60555 May  4  2022  conf_file.zip
+-rw-rw-r--     1 wunian wunian     563385 Jun  7  2021  confs_good.txt
+-rwxr-x---     1 wunian wunian        159 May  4  2022  copy_conf.sh*
+-rw-r-----     1 wunian wunian     230205 Sep  5  2021  data_2019.txt
+-rw-rw-r--     1 wunian wunian      27847 Apr 16  2021  data_process_1.ipynb
+-rw-rw-r--     1 wunian wunian     259299 Apr 16  2021  data_process_2.ipynb
+drwxrwxr-x     2 wunian wunian       4096 Sep 25  2022  dataset/
+-rw-r-----     1 wunian wunian     997804 Jun 11  2022  dock_all_rmsd_energy.txt
+drwxrwxr-x     5 wunian wunian       4096 Jun  4  2021  dock_divide/
+drwxrwxr-x     2 wunian wunian       4096 Apr 28  2021  dock_file/
+-rw-rw-r--     1 wunian wunian       4000 May 26  2021  dock_part00
+-rw-rw-r--     1 wunian wunian       4000 May 26  2021  dock_part01
+-rw-rw-r--     1 wunian wunian       4000 May 26  2021  dock_part02
+-rw-rw-r--     1 wunian wunian       4000 May 26  2021  dock_part03
+-rw-rw-r--     1 wunian wunian       4000 May 26  2021  dock_part04
+-rw-rw-r--     1 wunian wunian       4000 May 26  2021  dock_part05
+-rw-rw-r--     1 wunian wunian       4000 May 26  2021  dock_part06
+-rw-rw-r--     1 wunian wunian       4000 May 26  2021  dock_part07
+-rw-rw-r--     1 wunian wunian       2080 May 26  2021  dock_part08
+-rw-r-----     1 wunian wunian       4355 Sep  6  2021  dock_sel_md_5_6.txt
+-rw-r-----     1 wunian wunian       2092 Oct 27  2021  dock_sel_md_8_10.txt
+-rw-r-----     1 wunian wunian       4672 Sep  6  2021  ene451.txt
+drwxr-x---  2577 wunian wunian      69632 Oct 28  2021  equil2-calculation/
+-rw-r-----     1 wunian wunian 8712647986 Aug 16  2021  equil2-calculation-2575.zip
+drwxr-x---    91 wunian wunian       4096 Oct 27  2021  equil2-calculation-89/
+-rw-r-----     1 wunian wunian  268263550 Oct 27  2021  equil2-calculation-89.zip
+-rw-rw-r--     1 wunian wunian      58926 May 26  2021  fail_step6666.txt
+-rw-r-----     1 wunian wunian    3825091 Aug  8  2021  fff-non.txt
+-rw-r-----     1 wunian wunian    2175286 Apr 24  2021  final_2019_all_info.xlsx
+-rw-rw-r--     1 wunian wunian      88220 Jun  4  2021  fine.txt
+-rw-rw-r--     1 wunian wunian     118636 May  9  2021  fine_step666.txt
+drwxrwxr-x     2 wunian wunian       4096 Apr 25  2021  force_field/
+-rw-r-----     1 wunian wunian       5990 Jul 29  2021  get-information-pdb.py
+-rwxr-x---     1 wunian wunian        769 Jun 11  2022  get_rmsd_energy_all.sh*
+-rw-r-----     1 wunian wunian    3770066 Aug  8  2021  ggg-non.txt
+-rw-rw-r--     1 wunian wunian      16535 May 28  2021  ggg.txt
+-rw-r-----     1 wunian wunian   13717367 Sep 22  2021  gggggg
+-rw-r-----     1 wunian wunian        573 Apr 17  2021  good.csv
+-rw-r-----     1 wunian wunian        573 Apr 17  2021  good.txt
+-rw-r-----     1 wunian wunian    1838854 Apr 19  2021  good.xlsx
+-rw-r-----     1 wunian wunian       1037 Aug 10  2021  hhh.fasta
+-rw-r-----     1 wunian wunian     176710 Aug  9  2021  hhh.txt
+-rw-r-----     1 wunian wunian     193213 Aug  9  2021  ions_5626.csv
+-rw-r-----     1 wunian wunian      12099 Aug  9  2021  ions_aa_200.csv
+-rw-r-----     1 wunian wunian      72183 Aug  9  2021  ions_metal.png
+-rw-r-----     1 wunian wunian      45529 Aug  9  2021  ions_metal.svg
+-rw-r-----     1 wunian wunian     193333 Aug  9  2021  ionsssss.csv
+-rw-r-----     1 wunian wunian      21006 Feb 28  2022  jupyter.out
+drwxr-x---     2 wunian wunian       4096 Dec  8  2021  left_1gvx/
+-rw-r-----     1 wunian wunian     400681 Dec  8  2021  left_1gvx_2oxn.zip
+drwxr-x---     2 wunian wunian       4096 Dec  8  2021  left_20xn/
+-rw-r-----     1 wunian wunian      96441 Sep  5  2021  left_general_1798.csv
+-rw-r-----     1 wunian wunian      33878 Aug  9  2021  ligand_num.csv
+-rw-r-----     1 wunian wunian       5153 Aug  9  2021  ligand_num_163_refine.csv
+-rw-r-----     1 wunian wunian      32841 Aug  9  2021  ligand_num_985.csv
+-rw-r-----     1 wunian wunian     137009 Aug 12  2021  md-fine.txt
+-rw-r-----     1 wunian wunian     171519 Aug 12  2021  md-process.txt
+-rw-r-----     1 wunian wunian       1332 Oct 27  2021  md_222.txt
+-rw-r-----     1 wunian wunian      11808 May  3  2022  md_222_conf.csv
+-rwxr-x---     1 wunian wunian        332 Feb  9  2022  md_dock_130.sh*
+-rwxr-x---     1 wunian wunian        343 Sep  6  2021  md_energy451.sh*
+drwxrwxr-x     2 wunian wunian       4096 Oct 15  2021  md_file/
+drwxr-x---     4 wunian wunian       4096 Nov 12  2021  md_list/
+-rwxr-x---     1 wunian wunian        571 Aug 12  2021  md_process.sh*
+drwxr-x---     2 wunian wunian       4096 Aug 12  2021  md_rmsd/
+drwxr-x---     2 wunian wunian    1048576 Sep  6  2021  md_sel/
+drwxr-x---   192 wunian wunian      12288 Feb  9  2022  md_sel_2a/
+-rw-r-----     1 wunian wunian    8433207 Mar 11  2022  md_sel_2a.zip
+drwxr-x---     2 wunian wunian      12288 Sep  6  2021  md_sel_5_6/
+drwxr-x---     2 wunian wunian       4096 Oct 28  2021  md_sel_8_10/
+-rwxr-x---     1 wunian wunian        290 Feb  9  2022  md_select451.sh*
+drwxr-x---     5 wunian wunian      12288 Oct 28  2021  md_select_451/
+-rw-r-----     1 wunian wunian       2255 Sep  6  2021  md_select_451.txt
+-rw-r-----     1 wunian wunian       2255 Sep  6  2021 'mdml@192.168.1.238'
+-rw-rw-r--     1 wunian wunian     146804 Jun  7  2021  mmpb-ene.txt
+drwxrwxr-x     2 wunian wunian       4096 Nov  6  2021  mmpbsa_file/
+-rw-rw-r--     1 wunian wunian       7000 May 13  2021  mmpbsa_good00
+-rwxr-x---     1 wunian wunian        424 Dec 10  2021  move_wunian.sh*
+-rw-rw-r--     1 wunian wunian          0 Jun  4  2021  mv
+-rw-rw-r--     1 wunian wunian     233380 Sep  4  2021  name2020.txt
+drwxr-x---   224 wunian wunian      12288 Dec 28  2021  neutral/
+-rwxr-x---     1 wunian wunian        532 Dec 28  2021  neutral_copy.sh*
+drwxr-x--- 17681 wunian wunian     520192 Mar 23  2022  new-bags/
+-rw-r-----     1 wunian wunian     262603 Apr 16  2021  new.txt
+drwxr-x---     3 wunian wunian       4096 Aug 11  2021  new_class_aa_ions/
+-rw-------     1 wunian wunian   24967802 Dec 28  2021  nohup.out
+-rwxr-x---     1 wunian wunian        475 Aug  8  2021  non_aa.sh*
+-rwxr-x---     1 wunian wunian        379 Nov 27  2021  other_dock_140.sh*
+-rw-r-----     1 wunian wunian       3361 Sep  5  2021  p56817_list.txt
+-rw-rw-r--     1 wunian wunian       2249 Apr 21  2021  pbtot.txt
+-rw-r-----     1 wunian wunian      88395 Apr 21  2021  pdblist.txt
+-rw-r-----     1 wunian wunian      38395 Jun  7  2021  pdblist2.txt
+-rw-r-----     1 wunian wunian     633383 Oct  8  2021  peptide_is_2019.csv
+-rwxr-x---     1 wunian wunian        633 Jul  7  2021  pmemd.sh*
+-rwxr-x---     1 wunian wunian        764 Aug 12  2021  post1_rmsd.sh*
+-rwxr-x---     1 wunian wunian        767 Aug 12  2021  post2_rmsd.sh*
+-rwxr-x---     1 wunian wunian        773 Aug 12  2021  post3_rmsd.sh*
+-rw-rw-r--     1 wunian wunian    4566172 May 14  2021  prediction_model.txt
+drwxr-x---     2 wunian wunian       4096 Jul  7  2021  processing/
+drwxr-x---     4 wunian wunian       4096 Sep 10  2021  protein-similarity/
+-rw-r-----     1 wunian wunian   10874238 Sep  5  2021  protein-statistic-modify.ipynb
+-rw-r-----     1 wunian wunian   10352081 Feb  9  2022  protein-statistic-modify222.ipynb
+-rw-rw-r--     1 wunian wunian       1508 Aug 10  2021  protein_seqsimi_acquire.py
+-rw-r-----     1 wunian wunian          0 Sep  6  2021  read.ipynb
+-rw-r-----     1 wunian wunian     254214 Apr 21  2021  result_step1.txt
+-rw-r-----     1 wunian wunian      33026 Aug 12  2021  rmsd-process-000.txt
+drwxrwxr-x     2 wunian wunian       4096 Jun 12  2021  rmsd_divide/
+drwxrwxr-x     2 wunian wunian       4096 Jun 11  2022  rmsd_results_all/
+-rw-rw-r--     1 wunian wunian      34080 May 26  2021  s8aaa.txt
+drwxr-x---     2 wunian wunian       4096 Jun  6 08:17  scripts_all/
+-rw-r-----     1 wunian wunian     429653 Sep 25  2022  scripts_all.zip
+-rw-rw-r--     1 wunian wunian       1403 Aug 10  2021  sequence_similarity.py
+-rw-rw-r--     1 wunian wunian      86673 Aug 10  2021  smith-waterman-src.zip
+-rwxr-x---     1 wunian wunian        944 Jun  7  2021  step10-2.sh*
+-rwxr-x---     1 wunian wunian        965 Jun 10  2021  step10.sh*
+-rw-r-----     1 wunian wunian       6430 Jun  4  2021  step10_analysis_rmsd.py
+-rw-rw-r--     1 wunian wunian     389459 Jun  5  2021  step10_bad.txt
+-rw-rw-r--     1 wunian wunian    1951833 Jun  5  2021  step10_good.txt
+-rwxr-x---     1 wunian wunian        626 Jul  7  2021  step11-com-exist.sh*
+-rwxr-x---     1 wunian wunian        833 Nov  5  2021  step11-equil-exist.sh*
+-rwxr-x---     1 wunian wunian       1704 Jul  7  2021  step11-md-cal.sh*
+-rwxr-x---     1 wunian wunian       2023 Jul  7  2021  step11-md-pre.sh*
+-rwxr-x---     1 wunian wunian        279 Jul  7  2021  step11-md.sh*
+-rwxr-x---     1 wunian wunian        534 Nov  3  2021  step11-mv-again.sh*
+-rwxr-x---     1 wunian wunian        485 Oct 27  2021  step11-mvmdml.sh*
+-rwxr-x---     1 wunian wunian         87 Oct 15  2021  step11-total.sh*
+-rw-r-----     1 wunian wunian       1713 Apr 21  2021  step1_choose_pro_chain.py
+-rw-r-----     1 wunian wunian       1527 May 13  2021  step1_num_chain.py
+-rw-r-----     1 wunian wunian       1632 May 13  2021  step1_num_chain2.py
+-rw-r-----     1 wunian wunian       1578 Apr 24  2021  step2_center_pocket.py
+-rw-r-----     1 wunian wunian       4015 Apr 24  2021  step3_generate_conformer.py
+-rw-r-----     1 wunian wunian       4572 Apr 25  2021  step4_pre_dock_conf.py
+-rw-r-----     1 wunian wunian       4606 Apr 25  2021  step5_md_prepare_ligand.py
+-rw-rw-r--     1 wunian wunian        492 May  9  2021  step6_attach.sh
+-rw-rw-r--     1 wunian wunian        499 Apr 25  2021  step6_md_prepare_force.sh
+-rwxrwxr-x     1 wunian wunian        775 May 16  2021  step6_result.sh*
+-rwxrwxr-x     1 wunian wunian        240 May 10  2021  step6_submit_force.sh*
+-rw-rw-r--     1 wunian wunian     131245 Apr 27  2021  step7_bad.txt
+-rw-r-----     1 wunian wunian       4595 Apr 27  2021  step7_dock_prepare.py
+-rw-rw-r--     1 wunian wunian     139953 Apr 27  2021  step7_good.txt
+-rw-rw-r--     1 wunian wunian      68396 May 31  2021  step8_bad_0.txt
+-rw-rw-r--     1 wunian wunian      66501 May 29  2021  step8_bad_1.txt
+-rw-rw-r--     1 wunian wunian      66977 May 30  2021  step8_bad_2.txt
+-rw-rw-r--     1 wunian wunian      63138 May 30  2021  step8_bad_3.txt
+-rw-rw-r--     1 wunian wunian      61872 May 29  2021  step8_bad_4.txt
+-rw-rw-r--     1 wunian wunian      60782 May 31  2021  step8_bad_5.txt
+-rw-rw-r--     1 wunian wunian      61941 May 30  2021  step8_bad_6.txt
+-rw-rw-r--     1 wunian wunian      60346 May 30  2021  step8_bad_7.txt
+-rw-rw-r--     1 wunian wunian      30438 May 28  2021  step8_bad_8.txt
+-rw-rw-r--     1 wunian wunian     597582 Jun  3  2021  step8_bad_all1.txt
+-rw-r-----     1 wunian wunian       6044 Apr 29  2021  step8_dock2_final.py
+-rw-r-----     1 wunian wunian       6044 May 26  2021  step8_dock2_final_0.py
+-rw-r-----     1 wunian wunian       6044 May 26  2021  step8_dock2_final_1.py
+-rw-r-----     1 wunian wunian       6044 May 26  2021  step8_dock2_final_2.py
+-rw-r-----     1 wunian wunian       6044 May 26  2021  step8_dock2_final_3.py
+-rw-r-----     1 wunian wunian       6044 May 26  2021  step8_dock2_final_4.py
+-rw-r-----     1 wunian wunian       6044 May 26  2021  step8_dock2_final_5.py
+-rw-r-----     1 wunian wunian       6044 May 26  2021  step8_dock2_final_6.py
+-rw-r-----     1 wunian wunian       6044 May 26  2021  step8_dock2_final_7.py
+-rw-r-----     1 wunian wunian       6044 May 26  2021  step8_dock2_final_8.py
+-rw-r-----     1 wunian wunian       5815 Jun  3  2021  step8_dock2_result.py
+-rw-rw-r--     1 wunian wunian      48664 May 31  2021  step8_good_0.txt
+-rw-rw-r--     1 wunian wunian      50827 May 29  2021  step8_good_1.txt
+-rw-rw-r--     1 wunian wunian      50275 May 30  2021  step8_good_2.txt
+-rw-rw-r--     1 wunian wunian      54682 May 30  2021  step8_good_3.txt
+-rw-rw-r--     1 wunian wunian      56132 May 29  2021  step8_good_4.txt
+-rw-rw-r--     1 wunian wunian      57370 May 31  2021  step8_good_5.txt
+-rw-rw-r--     1 wunian wunian      56053 May 30  2021  step8_good_6.txt
+-rw-rw-r--     1 wunian wunian      57862 May 30  2021  step8_good_7.txt
+#!/usr/bin/env python
+# coding: utf-8
+
+### analyze all pdbid in pdbbind database 2019
+
+import pandas as pd
+import os
+import numpy as np
+from pandas import Series, DataFrame
+import matplotlib.pyplot as plt
+import matplotlib
+
+import matplotlib.pyplot as plt
+import numpy as np
+from sklearn import datasets, linear_model
+from sklearn.metrics import mean_squared_error, r2_score
+
+
+from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import accuracy_score,confusion_matrix,classification_report
+pd.set_option('display.max_columns', None)
+
+import rdkit
+from rdkit import Chem
+from rdkit.Chem import AllChem
+import rdkit.Chem
+from rdkit.Chem import Draw
+from rdkit import DataStructs
+from rdkit.Chem.Fingerprints import FingerprintMols
+from rdkit.Chem import rdFMCS
+
+from rdkit.Chem import MCS
+from rdkit.Chem import rdFMCS
+
+from rdkit.Chem import rdRGroupDecomposition as rdRGD
+
+
+import math
+import re
+"com_par5_s.py" 171L, 5040C                                                                        1,1           Top
+#!/usr/bin/env python
+# coding: utf-8
+
+### analyze all pdbid in pdbbind database 2019
+
+import pandas as pd
+import os
+import numpy as np
+from pandas import Series, DataFrame
+import matplotlib.pyplot as plt
+import matplotlib
+
+import matplotlib.pyplot as plt
+import numpy as np
+from sklearn import datasets, linear_model
+from sklearn.metrics import mean_squared_error, r2_score
+
+
+from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import accuracy_score,confusion_matrix,classification_report
+pd.set_option('display.max_columns', None)
+
+import rdkit
+from rdkit import Chem
+from rdkit.Chem import AllChem
+import rdkit.Chem
+from rdkit.Chem import Draw
+from rdkit import DataStructs
+from rdkit.Chem.Fingerprints import FingerprintMols
+from rdkit.Chem import rdFMCS
+
+from rdkit.Chem import MCS
+from rdkit.Chem import rdFMCS
+
+from rdkit.Chem import rdRGroupDecomposition as rdRGD
+
+
+import math
+import re
+import time
+
+from pymol import cmd
+import pymol2
+
+from tqdm import tqdm
+
+
+
+amino={'G':'Gly','A':'Ala','V':'Val','L':'Leu','I':'Ile','P':'Pro','F':'Phe','Y':'Tyr','W':'Trp','S':'Ser','T':'Thr',
+       'C':'Cys','M':'Met','N':'Asn','Q':'Gln','D':'Asp','E':'Glu','K':'Lys','R':'Arg','H':'His'}
+amino_v=list(amino.values())
+amino_std=[amino_v[i].upper()  for   i in range(len(amino_v))]+list(amino.keys())
+amino_std=amino_std+['HOH']
+
+
+p=pymol2.PyMOL()
+p.start()
+cmd=p.cmd
+
+
+class pdbid_attribute:
+    def __init__(self, pdbid):
+        self.path='/data/wunian/master-github/md-ml-nian/v2019-other-PL-refine'
+        self.pdbid=pdbid
+        self.lig=self.pdbid+'_ligand'
+        self.pro=self.pdbid+'_protein'
+        self.lig_file=self.pdbid+'_ligand.mol2'
+        self.pro_file=self.pdbid+'_protein.pdb'
+        self.lig_file_path=os.path.join(self.path, self.pdbid, self.lig_file)
+        self.pro_file_path=os.path.join(self.path, self.pdbid, self.pro_file)
+
+    def get_smiles(self):
+        mol=Chem.MolFromMol2File(self.lig_file_path)
+        smi=Chem.MolToSmiles(mol,isomericSmiles=True,canonical=True)
+        return smi
+
+    def get_lig_name(self):
+        cmd.load(self.lig_file_path)
+        lig_name=cmd.get_model(self.lig).atom[0].resn
+        cmd.remove("all")
+        return lig_name
+
+    def get_ions(self):
+        cmd.load(self.pro_file_path)
+        cmd.select('sel_metal',self.pro+" and metal")
+        metals=cmd.get_model('sel_metal').atom
+        metals=[i.name for i in metals]
+        metals_num=len(metals)
+        cmd.remove("all")
+        return metals, metals_num
+
+    def get_non_aa_chains_seq(self):
+        cmd.load(self.pro_file_path)
+        gg=cmd.get_model(self.pro)
+        chs=cmd.get_chains(self.pro)
+        pattern = re.compile('[A-Za-z]')
+        if pattern.findall(str(chs)):
+             try:
+                chs.remove('')
+             except:
+                pass
+             seqs=cmd.get_fastastr(self.pro+' and chain %s' % chs[0])
+             seqs=cmd.get_fastastr(self.pro)
+             seqs=''.join([s0 for s0 in seqs.strip().split()[1:]])
+        aa_abc=[]
+                #print(atom.resi, atom.resn)
+                aa_cdd=atom.resi+'_'+atom.resn
+                aa_abc.append(aa_cdd)
+        cmd.delete('all')
+
+
+
+# In[9]:
+
+
+# cmd.select('aaa',resn)
+
+# In[19]:
+
+
+
+# In[23]:
+-rw-rw-r--     1 wunian wunian      30622 May 28  2021  step8_good_8.txt
+#!/usr/bin/env python
+# coding: utf-8
+
+### analyze all pdbid in pdbbind database 2019
+
+import pandas as pd
+import os
+import numpy as np
+from pandas import Series, DataFrame
+import matplotlib.pyplot as plt
+import matplotlib
+
+import matplotlib.pyplot as plt
+import numpy as np
+from sklearn import datasets, linear_model
+from sklearn.metrics import mean_squared_error, r2_score
+
+
+from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import accuracy_score,confusion_matrix,classification_report
+pd.set_option('display.max_columns', None)
+
+import rdkit
+from rdkit import Chem
+from rdkit.Chem import AllChem
+import rdkit.Chem
+from rdkit.Chem import Draw
+from rdkit import DataStructs
+from rdkit.Chem.Fingerprints import FingerprintMols
+from rdkit.Chem import rdFMCS
+
+from rdkit.Chem import MCS
+from rdkit.Chem import rdFMCS
+
+from rdkit.Chem import rdRGroupDecomposition as rdRGD
+
+
+import math
+import re
+"com_par5_s.py" 171L, 5040C                                                                        1,1           Top
+#!/usr/bin/env python
+# coding: utf-8
+
+### analyze all pdbid in pdbbind database 2019
+
+import pandas as pd
+import os
+import numpy as np
+from pandas import Series, DataFrame
+import matplotlib.pyplot as plt
+import matplotlib
+
+import matplotlib.pyplot as plt
+import numpy as np
+from sklearn import datasets, linear_model
+from sklearn.metrics import mean_squared_error, r2_score
+
+
+from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import accuracy_score,confusion_matrix,classification_report
+pd.set_option('display.max_columns', None)
+
+import rdkit
+from rdkit import Chem
+from rdkit.Chem import AllChem
+import rdkit.Chem
+from rdkit.Chem import Draw
+from rdkit import DataStructs
+from rdkit.Chem.Fingerprints import FingerprintMols
+from rdkit.Chem import rdFMCS
+
+from rdkit.Chem import MCS
+from rdkit.Chem import rdFMCS
+
+from rdkit.Chem import rdRGroupDecomposition as rdRGD
+
+
+import math
+import re
+import time
+
+from pymol import cmd
+import pymol2
+
+from tqdm import tqdm
+
+
+
+amino={'G':'Gly','A':'Ala','V':'Val','L':'Leu','I':'Ile','P':'Pro','F':'Phe','Y':'Tyr','W':'Trp','S':'Ser','T':'Thr',
+       'C':'Cys','M':'Met','N':'Asn','Q':'Gln','D':'Asp','E':'Glu','K':'Lys','R':'Arg','H':'His'}
+amino_v=list(amino.values())
+amino_std=[amino_v[i].upper()  for   i in range(len(amino_v))]+list(amino.keys())
+amino_std=amino_std+['HOH']
+
+
+p=pymol2.PyMOL()
+p.start()
+cmd=p.cmd
+
+
+class pdbid_attribute:
+    def __init__(self, pdbid):
+        self.path='/data/wunian/master-github/md-ml-nian/v2019-other-PL-refine'
+        self.pdbid=pdbid
+        self.lig=self.pdbid+'_ligand'
+        self.pro=self.pdbid+'_protein'
+        self.lig_file=self.pdbid+'_ligand.mol2'
+        self.pro_file=self.pdbid+'_protein.pdb'
+        self.lig_file_path=os.path.join(self.path, self.pdbid, self.lig_file)
+        self.pro_file_path=os.path.join(self.path, self.pdbid, self.pro_file)
+
+    def get_smiles(self):
+        mol=Chem.MolFromMol2File(self.lig_file_path)
+        smi=Chem.MolToSmiles(mol,isomericSmiles=True,canonical=True)
+        return smi
+
+    def get_lig_name(self):
+        cmd.load(self.lig_file_path)
+        lig_name=cmd.get_model(self.lig).atom[0].resn
+        cmd.remove("all")
+        return lig_name
+
+    def get_ions(self):
+        cmd.load(self.pro_file_path)
+        cmd.select('sel_metal',self.pro+" and metal")
+        metals=cmd.get_model('sel_metal').atom
+        metals=[i.name for i in metals]
+        metals_num=len(metals)
+        cmd.remove("all")
+        return metals, metals_num
+
+    def get_non_aa_chains_seq(self):
+        cmd.load(self.pro_file_path)
+        gg=cmd.get_model(self.pro)
+        chs=cmd.get_chains(self.pro)
+        pattern = re.compile('[A-Za-z]')
+        if pattern.findall(str(chs)):
+             try:
+                chs.remove('')
+             except:
+                pass
+             seqs=cmd.get_fastastr(self.pro+' and chain %s' % chs[0])
+             seqs=cmd.get_fastastr(self.pro)
+             seqs=''.join([s0 for s0 in seqs.strip().split()[1:]])
+        aa_abc=[]
+                #print(atom.resi, atom.resn)
+                aa_cdd=atom.resi+'_'+atom.resn
+                aa_abc.append(aa_cdd)
+        cmd.delete('all')
+
+
+
+# In[9]:
+
+
+# cmd.select('aaa',resn)
+
+# In[19]:
+
+
+
+# In[23]:
+amino_std=[amino_v[i].upper()  for   i in range(len(amino_v))]+list(amino.keys())
+amino_std=amino_std+['HOH']
+
+
+p=pymol2.PyMOL()
+p.start()
+cmd=p.cmd
+
+
+class pdbid_attribute:
+    def __init__(self, pdbid):
+        self.path='/data/wunian/master-github/md-ml-nian/v2019-other-PL-refine'
+        self.pdbid=pdbid
+        self.lig=self.pdbid+'_ligand'
+        self.pro=self.pdbid+'_protein'
+        self.lig_file=self.pdbid+'_ligand.mol2'
+        self.pro_file=self.pdbid+'_protein.pdb'
+        self.lig_file_path=os.path.join(self.path, self.pdbid, self.lig_file)
+        self.pro_file_path=os.path.join(self.path, self.pdbid, self.pro_file)
+
+    def get_smiles(self):
+        mol=Chem.MolFromMol2File(self.lig_file_path)
+        smi=Chem.MolToSmiles(mol,isomericSmiles=True,canonical=True)
+        return smi
+
+    def get_lig_name(self):
+        cmd.load(self.lig_file_path)
+        lig_name=cmd.get_model(self.lig).atom[0].resn
+        cmd.remove("all")
+        return lig_name
+
+    def get_ions(self):
+        cmd.load(self.pro_file_path)
+        cmd.select('sel_metal',self.pro+" and metal")
+        metals=cmd.get_model('sel_metal').atom
+        metals=[i.name for i in metals]
+        metals_num=len(metals)
+        cmd.remove("all")
+        return metals, metals_num
+
+    def get_non_aa_chains_seq(self):
+        cmd.load(self.pro_file_path)
+        gg=cmd.get_model(self.pro)
+        chs=cmd.get_chains(self.pro)
+        pattern = re.compile('[A-Za-z]')
+        if pattern.findall(str(chs)):
+             try:
+                chs.remove('')
+             except:
+                pass
+             seqs=cmd.get_fastastr(self.pro+' and chain %s' % chs[0])
+             seqs=cmd.get_fastastr(self.pro)
+             seqs=''.join([s0 for s0 in seqs.strip().split()[1:]])
+        aa_abc=[]
+                #print(atom.resi, atom.resn)
+                aa_cdd=atom.resi+'_'+atom.resn
+                aa_abc.append(aa_cdd)
+        cmd.delete('all')
+
+
+
+# In[9]:
+
+
+# cmd.select('aaa',resn)
+
+# In[19]:
+
+
+
+# In[23]:
+-rw-rw-r--     1 wunian wunian    2391016 Jun  3  2021  step8_good_all1.txt
+-rwxrwxr-x     1 wunian wunian        726 May 10  2021  step8_result.sh*
+pdbid   ions    chains  sequence        len(seq)
+3gy7    {'1_CA'}        ['A']   IVGGYTCGANTVPYQVSLNSGYHFCGGSLINSQWVVSAAHCYKSGIQVRLGEDNINVVEGNEQFISASSIVHPSYNSNTLNNDIMLIKLKSAASLNSRVASISLPTSCASAGTQCLISGWGNTKSSGTSYPDVLKCLKAPILSDSSCKSAYPGQITSNMFCAGYLEGGKDSCQGDSGGPVVCSGKLQGIVSWGSGCAQKNKPGVYTKVCNYVSWIKQTIASN  222
+5za8    set()   ['U']   IIGGEFTTIENQPWFAAIYRRHRGGSVTYVCGGSLISPCWVISATHCFIDYPKKEDYIVYLGRSRLNSNTQGEMKFEVENLILHKDYSADTLAHHNDIALLKIRSKEGRCAQPSRTIQTIALPSMYNDPQFGTSCEITGFGKEQSTDYLYPEQLKMTVVKLISHRECQQPHYYGSEVTTKMLCAADPQWKTDSCQGDSGGPLVCSLQGRMTLTGIVSWGRGCALKDKPGVYTRVSHFLPWIRSHT   245
+5wlo    {'1_NA'}        ['A','B']       PQITLWKRPLVTIKIGGQLKEALLDTGADDTVIEEMSLPGRWKPKMIGGIGGFIKVRQYDQIIIEIAGHKAIGTVLVGPTPVNIIGRNLLTQIGATLNF     99
+4o7e    set()   ['A']   SMNPPPPETSNPNKPKRQTNQLQYLLRVVLKTLWKHQFAWPFQQPVDAVKLNLPDYYKIIKTPMDMGTIKKRLENNYYWNAQECIQDFNTMFTNCYIYNKPGDDIVLMAEALEKLFLQKINELPTEE 127
+1x38    set()   ['A']   DYVLYKDATKPVEDRVADLLGRMTLAEKIGQMTQIERLVATPDVLRDNFIGSLLSGGGSVPRKGATAKEWQDMVDGFQKACMSTRLGIPMIYGIDAVHGQNNVYGATIFPHNVGLGATRDPYLVKRIGEATALEVRATGIQYAFAPCIAVCRDPRWGRCYESYSEDRRIVQSMTELIPGLQGDVPKDFTSGMPFVAGKNKVAACAKHFVGDGGTVDGINENNTIINREGLMNIHMPAYKNAMDKGVSTVMISYSSWNGVKMHANQDLVTGYLKDTLKFKGFVISDWEGIDRITTPAGSDYSYSVKASILAGLDMIMVPNKYQQFISILTGHVNGGVIPMSRIDDAVTRILRVKFTMGLFENPYADPAMAEQLGKQEHRDLAREAARKSLVLLKNGKTSTDAPLLPLPKKAPKILVAGSHADNLGYQCGGWTIEWQGDTGRTTVGTTILEAVKAAVDPSTVVVFAENPDAEFVKSGGFSYAIVAVGEHPYTETKGDNLNLTIPEPGLSTVQAVCGGVRCATVLISGRPVVVQPLLAASDALVAAWLPGSEGQGVTDALFGDFGFTGRLPRTWFKSVDQLPMNVGDAHYDPLFRLGYGLTTNAT      602
+2o63    set()   ['A']   PLESQYQVGPLLGSGGFGSVYSGIRVSDNLPVAIKHVEKDRISDWGELPNGTRVPMEVVLLKKVSSGFSGVIRLLDWFERPDSFVLILERPEPVQDLFDFITERGALQEELARSFFWQVLEAVRHCHNCGVLHRDIKDENILIDLNRGELKLIDFGSGALLKDTVYTDFDGTRVYSPPEWIRYHRYHGRSAAVWSLGILLYDMVCGDIPFEHDEEIIRGQVFFRQRVSSECQHLIRWCLALRPSDRPTFEEIQNHPWMQDVLLPQETAEIHLHS      274
+4jsa    {'1_ZN'}        ['A']   HWGYGKHNGPEHWHKDFPIAKGERQSPVDIDTHTAKYDPSLKPLSVSYDQATSLRILNNGHAFNVEFDDSQDKAVLKGGPLDGTYRLIQFDFHWGSLDGQGSEHTVDKKKYAAELHLVHWNTKYGDFGKAVQQPDGLAVLGIFLKVGSAKPGLQKVVDVLDSIKTKGKSADFTNFDPRGLLPESLDYWTYPGSLTTPPLLECVTWIVLKEPISVSSEQVLKFRKLNFNGEGEPEELMVDNWRPAQPLKNRQIKASFK       257
+1v2h    set()   ['A','B','E']   ENGYTYEDYKNTAEWLLSHTKHRPQVAIICGSGLGGLTDKLTQAQIFDYSEIPNFPRSTVPGHAGRLVFGFLNGRACVMMQGRFHMYEGYPLWKVTFPVRVFHLLGVDTLVVTNAAGGLNPKFEVGDIMLIRDHINLPGFSGQNPLRGPNDERFGDRFPAMSDAYDRTMRQRALSTWKQMGEQRELQEGTYVMVAGPSFETVAECRVLQKLGADAVGMSTVPEVIVARHCGLRVFGFSLITNKVIMDYESLEKANHEEVLAAGKQAAQKLEQFVSILMASIPLPDKAS        288
+4ixv    {'4_MN','6_MN','2_MN','3_MN','5_MN','1_MN'}     ['A','B','C']   HSVAVIGAPFSQGQKRKGVEHGPAAIREAGLMKRLSSLGCHLKDFGDLSFTPVPKDDLYNNLIVNPRSVGLANQELAEVVSRAVSDGYSCVTLGGDHSLAIGTISGHARHCPDLCVVWVDAHADINTPLTTSSGNLHGQPVSFLLRELQDKVPQLPGFSWIKPCISSASIVYIGLRDVDPPEHFILKNYDIQYFSMRDIDRLGIQKVMERTFDLLIGKRQRPIHLSFDIDAFDPTLAPATGTPVVGGLTYREGMYIAEEIHNTGLLSALDLVEVNPQLATSEEEAKTTANLAVDVIASSFGQTREG      306
+2h23    set()   ['A']   LSPAVQTFWKWLQEEGVITAKTPVKASVVTEGLGLVALKDISRNDVILQVPKRLWINPDAVAASEIGRVCSELKPWLSVILFLIRERSREDSVWKHYFGILPQETDSTIYWSEEELQELQGSQLLKTTVSVKEYVKNECLKLEQEIILPNKRLFPDPVTLDDFFWAFGILRSRAFSRLNLVVVPMADLINHSAGVTTEDHAYEVYLFSLKSPLSVKAGEQVYIQYDLNKSNAELALDYGFIEPNENRHAYTLTLEISESDPFFDDKLDVAESNGFAQTAYFDIFYNRTLPPGLLPYLRLVALGGTDAFLLESLFRDTIWGHLELSVSRDNEELLCKAVREACKSALAGYHTTIEQDRELKEGNLDSRLAIAVGIREGEKMVLQQIDGIFEQKELELDQLEYYQERRLKDLGLCGENGDILENLY        424
+2w66    {'1_CA'}        ['A']   SLQPPPQQLIVQNKTIDLPAVYQLNGGEEANPHAVKVLKELLSGKQSSKKGMLISIGEKGDKSVRKYSRQIPDHKEGYYLSVNEKEIVLAGNDERGTYYALQTFAQLLKDGKLPEVEIKDYPSVRYRGVVEGFYGTPWSHQARLSQLKFYGKNKMNTYIYGPKDDPYHSAPNWRLPYPDKEAAQLQELVAVANENEVDFVWAIHPGQDIKWNKEDRDLLLAKFEKMYQLGVRSFAVFFDDISGEGTNPQKQAELLNYIDEKFAQVKPDINQLVMCPTEYNKSWSNPNGNYLTTLGDKLNPSIQIMWTGDRVISDITRDGISWINERIKRPAYIWWNFPVSDYVRDHLLLGPVYGNDTTIAKEMSGFVTNPMEHAESSKIAIYSVASYAWNPAKYDTWQTWKDAIRTILPSAAEELECFAMHNSDLGPNGHGYRREESMDIQPAAERFLKAFKEGKNYDKADFETLQYTFERMKESADILLMNTENKPLIVEITPWVHQFKLTAEMGEEVLKMVEGRNESYFLRKYNHVKALQQQMFYIDQTSNQNPYQPGVKTATRVIKPLIDRTFATVVKFFNQKFNAHLDATTDYMPHKMLPLQVKANRVLISPVEIELDAIYPGENIQINFRLSAGLQKAPVKFVRFFVLTIEK 647
+"2019-results-final-chs-seq-2-aa.txt" 17655L, 5746984C                                             1,1           Top
+-rwxr-x---     1 wunian wunian       1738 May 13  2021  step9-mmpbsa-cal.sh*
+-rwxr-x---     1 wunian wunian       1738 May 13  2021  step9-mmpbsa-cal1.sh*
+3vha    set()   ['A']   PMEEEEVETFAFQAEIAQLMSLIINTFYSNKEIFLRELISNSSDALDKIRYESLTDPSKLDSGKELHINLIPNKQDRTLTIVDTGIGMTKADLINNLGTIAKSGTKAFMEALQAGADISMIGQFGVGFYSAYLVAEKVTVITKHNDDEQYAWESSAGGSFTVRTDTGEPMGRGTKVILHLKEDQTEYLEERRIKEIVKKHSQFIGYPITLFVEKE 215
+5fi6    set()   ['A','B','C','D']       PSLEDLLFYTIAEGQEKIPVHKFITALKSTGLRTSDPRLKECMDMLRLTLQTTSDGVMLDKDLFKKCVQSNIVLLTQAFRRKFVIPDFMSFTSHIDELYESAKKQSGGKVADYIPQLAKFSPDLWGVSVCTVDGQRHSTGDTKVPFCLQSCVKPLKYAIAVNDLGTEYVHRYVGKEPSGLRFNKLFLNEDDKPHNPMVNAGAIVVTSLIKQGVNNAEKFDYVMQFLNKMAGNEYVGFSNATFQSERESGDRNFAIGYYLKEKKCFPEGTDMVGILDFYFQLCSIEVTCESASVMAATLANGGFCPITGERVLSPEAVRNTLSLMHSCGMYDFSGQFAFHVGLPAKSGVAGGILLVVPNVMGMMCWSPPLDKMGNSVKGIHFCHDLVSLCNFHNYDNLRHFAKKLDPRREG      410
+3l8s    set()   ['A']   ERPTFYRQELNKTIWEVPERYQNLSPVGSGSVCAAFDTKTGLRVAVKKLSRPFQSIIHAKRTYRELRLLKHMKHENVIGLLDVFTPARSLEEFNDVYLVTHLMGADLNNIVKSQKLTDDHVQFLIYQILRGLKYIHSADIIHRDLKPSNLAVNEDSELKILDFVATRWYRAPEIMLNWMHYNQTVDIWSVGCIMAELLTGRTLFPGTDHIDQLKLILRLVGTPGAELLKKISSESARNYIQSLTQMPKMNFANVFIGANPLAVDLLEKMLVLDSDKRITAAQALAHAYFAQYHDPDDEPVADPYDQSLESRDLLIDEWKSLTYDEVISFVPPPL  334
+4ppb    set()   ['A']   SVIDPSELTFVQEIGSGQFGLVHLGYWLNKDKVAIKTIEDFIEEAEVMMKLSHPKLVQLYGVCLEQAPICLVFEFMEHGCLSDYLRTQRGLFAAETLLGMCLDVCEGMAYLEEACVIHRDLAARNCLVGENQVIKVSDFGPVKWASPEVFSFSRYSSKSDVWSFGVLMWEVFSEGKIPYENRSNSEVVEDISTGFRLYKPRLASTHVYQIMNHCWKERPEDRPAFSRLLRQLAEIAESG 239
+6fnf    set()   ['A']   TEIHPSCVTRQKVIGAGEFGEVYKGMLKTKEVPVAIKTLKAGYTEKQRVDFLGEAGIMGQFSHHNIIRLEGVISKYKPMMIITEYMENGALDKFLREKDGEFSVLQLVGMLRGIAAGMKYLANMNYVHRDLAARNILVNSNLVCKVSDFGLSPIRWTAPEAISYRKFTSASDVWSFGIVMWEVMTYGERPYWELSNHEVMKAINDGFRLPTPMDCPSAIYQLMMQCWQQERARRPKFADIVSILDKLIRAPDSLKTLADFDPRVSIR     267
+1tl1    {'280_CSD'}     ['A','B']       PIETVPVKLKPGMDGPKVKQWPLTEEKIKALVEICTEMEKEGKISKIGPENPYNTPVFAIKWRKLVDFRELNKRTQDFWEVQLGIPHPAGLKKKKSVTVLDVGDAYFSVPLDEDFRKYTAFTIPSINNETPGIRYQYNVLPQGWKGSPAIFQSSMTKILEPFRKQNPDIVIYQYMDDLYVGSDLEIGQHRTKIEELRQHLLRWGLTTPDKKHQKEPPFLWMGYELHPDKWTVQPIVLPEKDSWTVNDIQKLVGKLNWASQIYPGIKVRQL?KLLRGTKALTEVIPLTEEAELELAENREILKEPVHGVYYDPSKDLIAEIQKQGQGQWTYQIYQEPFKNLKTGKYARMRGAHTNDVKQLTEAVQKITTESIVIWGKTPKFKLPIQKETWETWWTEYWQATWIPEWEFVNTPPLVKLWYQLEKEPIVGAETFYVDAGYVTNRGRQKVVTLTDTTNQKTELQAIYLALQDSGLEVNIVTDSQYALGIIQAQPDQSESELVNQIIEQLIKKEKVYLAWVP   517
+1p28    set()   ['A']   NSSTQSYKDAMGPLVRECMGSVSATEDDFKTVLNRNPLESRTAQCLLACALDKVGLISPEGAIYTGDDLMPVMNRLYGFNDFKTVMKAKAVNDCANQVNGAYPDRCDLIKNFTDCVRNS 119
+5hvp    set()   ['A','B']       PQITLWQRPLVTIKIGGQLKEALLDTGADDTVLEEMNLPGRWKPKMIGGIGGFIKVRQYDQILIEICGHKAIGTVLVGPTPVNIIGRNLLTQIGCTLNF     99
+4nyj    {'1_MG'}        ['Q','R','S']   MTEYKLVVVGAGGVGKSALTIQLIQNHFVDEYDPTIEDSYRKQVVIDGETCLLDILDTAGQEEASAMRDQYMRTGEGFLCVFAINNTKSFEDIHQYREQIKRVKDSDDVPMVLVGNKCDLAARTVESRQAQDLARSYGIPYIETSAKTRQGVEDAFYTLVREIRQH  166
+2mwp    set()   ['A']   GHMNSFVGLRVVAKWSSNGYFYSGKITRDVGAGKYKLLFDDGYECDVLGKDILLCDPIPLDTEVTALSEDEYFSAGVVKGHRKESGELYYSIEKEGQRKWYKRMAVILSLEQGNRLREQYGLG     123
+4hmq    {'11_CD','1_CD','10_CD','5_CD','8_CD','2_CD','7_CD','4_CD','3_CD','9_CD','6_CD'}        ['A']   KIVLDHAFGQTILDKKPERVATIAWGNHDVALALGIVPVGFSKANYGVSADKGVLPWTEEKIKELNGKANLFDDLDGLNFEAISNSKPDVILAGYSGITKEDYDTLSKIAPVAAYKSKPWQTLWRDMIKIDSKALGMEKEGDELIKNTEARISKELEKHPEIKGKIKGKKVLFTMINAADTSKFWIYTSKDPRANYLTDLGLVFPESLKEFESEDSFAKEISAEEANKINDADVIITYGDDKTLEALQKDPLLGKINAIKNGAVAVIPDNTPLAASCTPTPLSINYTIEEYLNLLGNACKNAK 303
+5ii2    set()   ['A']   SKYMTPMQQKLNEVYEAVKNYTDKRGRRLSAIFLRLPSRSELPDYYLTIKKPMDMEKIRSHMMANKYQDIDSMVEDFVMMFNNACTYNEPESLIYKDALVLHKVLLETRRDLEGD     115
+4yv5    set()   ['A','B']       SLFELGKMILQETGKNPAKSYGVYGCNCGVGGRGKPKDATDRCCYVHKCCYKKLTGCDPKKDRYSYSWKDKTIVCGENNSCLKELCECDKAVAICLRENLDTYNKKYRYNYLKPFCKKADPC      122
+6bu1    {'3_MG','2_MG','1_MG','4_MG'}   ['A']   DRVSVGNLRIARVLYDFVNNEALPGTDIDPDSFWAGVDKVVADLTPQNQALLNARDELQAQIDKWHRRR@@@
+"2019-results-final-chs-seq-2-aa.txt" 17655L, 5746984C                                             38,1           0%
+-rwxr-x---     1 wunian wunian       1738 May 13  2021  step9-mmpbsa-cal2.sh*
+{
+ "cells": [
+  {
+   "cell_type": "code",
+   "execution_count": 14,
+   "id": "d3798b14",
+   "metadata": {
+    "ExecuteTime": {
+     "end_time": "2021-10-08T14:37:03.515799Z",
+     "start_time": "2021-10-08T14:37:03.471601Z"
+    }
+   },
+   "outputs": [],
+   "source": [
+    "#!/usr/bin/env python\n",
+    "# coding: utf-8\n",
+    "\n",
+    "### analyze all pdbid in pdbbind database 2019\n",
+    "\n",
+    "import pandas as pd\n",
+    "import os\n",
+    "import numpy as np\n",
+    "from pandas import Series, DataFrame\n",
+    "import matplotlib.pyplot as plt\n",
+    "import matplotlib\n",
+    "\n",
+    "import itertools\n",
+    "import matplotlib.pyplot as plt\n",
+    "import numpy as np\n",
+    "from sklearn import datasets, linear_model\n",
+    "from sklearn.metrics import mean_squared_error, r2_score\n",
+    "\n",
+    "\n",
+    "from sklearn.feature_extraction.text import CountVectorizer\n",
+    "from sklearn.model_selection import train_test_split\n",
+    "from sklearn.metrics import accuracy_score,confusion_matrix,classification_report\n",
+    "pd.set_option('display.max_columns', None)\n",
+    "\n",
+    "import rdkit\n",
+    "from rdkit import Chem\n",
+"Untitled.ipynb" 1453L, 46391C                                                                     1,1           Top
+{
+ "cells": [
+  {
+   "cell_type": "code",
+   "execution_count": 14,
+   "id": "d3798b14",
+   "metadata": {
+    "ExecuteTime": {
+     "end_time": "2021-10-08T14:37:03.515799Z",
+     "start_time": "2021-10-08T14:37:03.471601Z"
+    }
+   },
+   "outputs": [],
+   "source": [
+    "#!/usr/bin/env python\n",
+    "# coding: utf-8\n",
+    "\n",
+    "### analyze all pdbid in pdbbind database 2019\n",
+    "\n",
+    "import pandas as pd\n",
+    "import os\n",
+    "import numpy as np\n",
+    "from pandas import Series, DataFrame\n",
+    "import matplotlib.pyplot as plt\n",
+    "import itertools\n",
+    "import matplotlib.pyplot as plt\n",
+    "import numpy as np\n",
+    "\n",
+    "\n",
+    "from sklearn.feature_extraction.text import CountVectorizer\n",
+    "from sklearn.model_selection import train_test_split\n",
+    "from sklearn.metrics import accuracy_score,confusion_matrix,classification_report\n",
+    "pd.set_option('display.max_columns', None)\n",
+    "\n",
+    "import rdkit\n",
+    "from rdkit import Chem\n",
+    "from rdkit.Chem import AllChem\n",
+    "import rdkit.Chem\n",
+    "from rdkit.Chem import Draw \n",
+    "from rdkit import DataStructs\n",
+    "from rdkit.Chem.Fingerprints import FingerprintMols\n",
+    "from rdkit.Chem import rdFMCS\n",
+    "\n",
+    "from rdkit.Chem import MCS\n",
+    "from rdkit.Chem import rdFMCS\n",
+    "\n",
+    "from rdkit.Chem import rdRGroupDecomposition as rdRGD\n",
+    "\n",
+    "\n",
+    "import math \n",
+    "import re\n",
+    "import time\n",
+    "\n",
+    "from pymol import cmd\n",
+    "import pymol2\n",
+    "\n",
+    "from tqdm import tqdm\n",
+    "\n",
+    "\n",
+    "\n",
+    "amino={'G':'Gly','A':'Ala','V':'Val','L':'Leu','I':'Ile','P':'Pro','F':'Phe','Y':'Tyr','W':'Trp','S':'Ser','T':'Thr',\n",
+    "       'C':'Cys','M':'Met','N':'Asn','Q':'Gln','D':'Asp','E':'Glu','K':'Lys','R':'Arg','H':'His'}\n",
+    "amino_v=list(amino.values())\n",
+    "amino_std=[amino_v[i].upper()  for   i in range(len(amino_v))]+list(amino.keys())\n",
+    "amino_std_h2o=amino_std+['HOH']\n",
+    "\n",
+    "\n",
+    "p=pymol2.PyMOL()\n",
+    "p.start()\n",
+    "cmd=p.cmd\n",
+    "\n",
+    "\n",
+    "class pdbid_attribute:\n",
+    "    def __init__(self, pdbid):\n",
+                                                                                                   73,1           2%
+-rwxr-x---     1 wunian wunian       1738 May 13  2021  step9-mmpbsa-cal3.sh*
+-rwxr-x---     1 wunian wunian       1738 May 13  2021  step9-mmpbsa-cal4.sh*
+-rwxr-x---     1 wunian wunian       1738 May 13  2021  step9-mmpbsa-cal5.sh*
+-rwxr-x---     1 wunian wunian       1738 May 13  2021  step9-mmpbsa-cal6.sh*
+-rwxr-x---     1 wunian wunian       1738 May 13  2021  step9-mmpbsa-cal7.sh*
+-rwxr-x---     1 wunian wunian       1738 May 13  2021  step9-mmpbsa-cal8.sh*
+-rwxr-x---     1 wunian wunian       1738 May 13  2021  step9-mmpbsa-cal9.sh*
+-rwxr-x---     1 wunian wunian        360 Aug 12  2021  step9-mmpbsa-energy.sh*
+-rwxr-x---     1 wunian wunian       1718 May 13  2021  step9-mmpbsa-pre.sh*
+drwxr-x---     2 wunian wunian       4096 Sep  6  2021  test_dataset_five/
+-rw-r-----     1 wunian wunian      12963 Sep  5  2021  test_dataset_five.zip
+-rw-rw-r--     1 wunian wunian     161034 May 16  2021  total-energy-e1.txt
+
+
+def write_information():
+    content=open('2019-results-final-chs-seq-2-aa.txt','a')
+    content.write('pdbid \t lig_name \t smiles \t chains \t chains_num \t ion num \t ion  \t aa num  \t aa  \n')
+    content.close()
+    os.chdir('../v2019-other-PL-refine')
+    pdblist=os.listdir()
+    for i in tqdm(pdblist):
+        with open('/data/wunian/master-github/md-ml-nian/PL-refine-analysis/2019-results-final-chs-seq-2-aa.txt','a') as  content:
+            try:
+                pp=pdbid_attribute(i)
+                # pp_lig_name=pp.get_lig_name()
+                # pp_smis=pp.get_smiles()
+                # pp_chains,pp_chains_num=pp.get_chains()
+                # ions,ions_num=pp.get_ions()
+                aa,bb,cc,dd=pp.get_non_aa_chains_seq()
+#                aa.remove('')
+                cmd.delete('all')
+                # content.write('%s \t %s \t %s \t %s \t  %s \t %s \t %s \t %s \t  %s \t %s \n' % (i,str(pp_lig_name), str(pp_smis), str(pp_chains), str(pp_chains_num), str(ions_num),str(ions),str(aa_num),str(aa), str(bb)))
+                content.write('%s \t  %s  \t %s  \t %s \t %s  \n' % (i, str(aa), str(bb), str(cc), dd))
+            except:
+                content.write('%s \n' % i )
+        # os.chdir('../')
+    #    content.write('pdbid: %s \t ion num: %s \t ion: %s \t aa num: %s \t aa: %s \n' % (i,str(ions_num),str(ions),str(aa_num),str(aa)))
+    os.chdir('/data/wunian/master-github/md-ml-nian/PL-refine-analysis')
+
+
+
+
+
+write_information()
+
+
+def write_information():
+    content=open('2019-results-final-chs-seq-2-aa.txt','a')
+    content.write('pdbid \t lig_name \t smiles \t chains \t chains_num \t ion num \t ion  \t aa num  \t aa  \n')
+    content.close()
+    os.chdir('../v2019-other-PL-refine')
+    pdblist=os.listdir()
+    for i in tqdm(pdblist):
+        with open('/data/wunian/master-github/md-ml-nian/PL-refine-analysis/2019-results-final-chs-seq-2-aa.txt','a') as  content:
+            try:
+                pp=pdbid_attribute(i)
+                # pp_lig_name=pp.get_lig_name()
+                # pp_smis=pp.get_smiles()
+                # pp_chains,pp_chains_num=pp.get_chains()
+                # ions,ions_num=pp.get_ions()
+                aa,bb,cc,dd=pp.get_non_aa_chains_seq()
+#                aa.remove('')
+                cmd.delete('all')
+                # content.write('%s \t %s \t %s \t %s \t  %s \t %s \t %s \t %s \t  %s \t %s \n' % (i,str(pp_lig_name), str(pp_smis), str(pp_chains), str(pp_chains_num), str(ions_num),str(ions),str(aa_num),str(aa), str(bb)))
+                content.write('%s \t  %s  \t %s  \t %s \t %s  \n' % (i, str(aa), str(bb), str(cc), dd))
+            except:
+                content.write('%s \n' % i )
+        # os.chdir('../')
+    #    content.write('pdbid: %s \t ion num: %s \t ion: %s \t aa num: %s \t aa: %s \n' % (i,str(ions_num),str(ions),str(aa_num),str(aa)))
+    os.chdir('/data/wunian/master-github/md-ml-nian/PL-refine-analysis')
+
+
+
+# In[ ]:
+
+
+write_information()
+
+
+# In[7]:
+
+"com_par5_s.py" 171L, 5040C                                                                        171,0-1       Bot
