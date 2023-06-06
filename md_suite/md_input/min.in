@@ -1,0 +1,10 @@
+minimise ras-raf
+ &cntrl
+  imin=1,maxcyc=1000,ncyc=500,
+  cut=8.0,ntb=1,
+  ntc=2,ntf=2,
+  ntpr=100,
+  ntr=1, restraintmask=':1-num_resid',
+  restraint_wt=2.0
+ /
+

@@ -1,0 +1,36 @@
+# load the AMBER force fields
+source leaprc.protein.ff14SB
+source leaprc.gaff
+source leaprc.water.tip3p
+loadAmberParams frcmod.ionsjc_tip3p
+
+
+# load the coordinates and create the complex
+protein = loadpdb clean.pdb
+savepdb protein protein.pdb
+saveamberparm protein protein.prmtop protein.inpcrd 
+
+# load force field parameters for ligand 
+loadoff lig.lib
+loadAmberParams lig.frcmod
+# load the coordinates and create the complex
+ligands = loadmol2  lig.mol2
+complex = loadpdb clean.pdb
+complex = combine {ligands complex}
+
+savepdb complex complex.pdb
+savepdb ligands ligand.pdb
+saveamberparm complex complex.prmtop complex.inpcrd 
+saveamberparm ligands lig.prmtop lig.inpcrd 
+
+
+solvatebox complex TIP3PBOX 12.0 
+addions complex Cl- 0
+addions complex Na+ 0
+savepdb complex complex_vdw_bonded.pdb
+saveamberparm complex complex_vdw_bonded.prmtop  complex_vdw_bonded.inpcrd
+
+
+quit
+~                                                                                                                                                                   
+"leap2.in" 43L, 1539C                      
