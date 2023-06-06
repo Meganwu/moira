@@ -8,8 +8,12 @@ do
   cp  ../total.cpptraj     .  
 
   iscl=`grep Cl-  complex_vdw_bonded.pdb`
+  isna=`grep Na+  complex_vdw_bonded.pdb`
   if [ -n "$iscl" ]; then
      noprostart=`grep "Cl-"  complex_vdw_bonded.pdb | head -n 1 | awk '{print $5}'`
+     let proend=$noprostart-1    
+  elif  [ -n "$isna" ]; then
+     noprostart=`grep "Na+"  complex_vdw_bonded.pdb | head -n 1 | awk '{print $5}'`
      let proend=$noprostart-1
   else
      noprostart=`grep "WAT"  complex_vdw_bonded.pdb | head -n 1 | awk '{print $5}'`
