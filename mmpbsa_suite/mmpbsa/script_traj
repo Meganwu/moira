@@ -1,0 +1,6 @@
+parm  complex_vdw_bonded.prmtop
+trajin complex_equil.mdcrd    1   -1  5
+trajin complex_equil2.mdcrd   1   -1  5
+trajin complex_equil3.mdcrd   1   -1  5
+
+trajout equil-new-f.mdcrd  mdcrd  append

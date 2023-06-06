@@ -1,0 +1,33 @@
+@GENERAL
+PREFIX                  snapshot
+PATH                    ./
+COMPLEX                 1
+RECEPTOR                1
+LIGAND                  1
+COMPT                   ./complex.prmtop
+RECPT                   ./protein.prmtop
+LIGPT                   ./lig.prmtop
+GC                      1
+AS                      0
+DC                      0
+MM                      0
+GB                      0
+PB                      0
+MS                      0
+NM                      0
+@MAKECRD
+BOX                     YES
+NTOTAL                  num_total
+NSTART                  1
+NSTOP                   2550 
+NFREQ                   1
+NUMBER_LIG_GROUPS       1
+LSTART                  1
+LSTOP                   lig_stop
+NUMBER_REC_GROUPS       1
+RSTART                  pro_start
+RSTOP                   pro_end
+@TRAJECTORY
+TRAJECTORY              ./equil-new-f.mdcrd
+@PROGRAMS
+
