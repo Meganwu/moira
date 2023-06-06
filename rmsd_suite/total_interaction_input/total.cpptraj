@@ -1,0 +1,40 @@
+parm  complex_vdw_bonded.prmtop
+trajin complex_equil.mdcrd
+trajin complex_equil2.mdcrd
+trajin complex_equil3.mdcrd
+
+reference complex_min.rst
+autoimage
+
+rms reference0 :3com&!@H= reference out new_rmsd_com.agr
+go
+
+rms reference1 :4lig&!@H= reference out new_rmsd_lig.agr
+go
+
+rms reference2 :2pro&!@H= reference out new_rmsd_pro.agr
+go
+
+hbond contacts :1  avgout new_avg.dat series uuseries new_hbond.gnu nointramol  
+go
+ 
+lifetime contacts[solutehb] out new_contacts-lifetime.dat 
+go
+
+atomicfluct out new_rmsf-ligand.agr  :4lig&!@H=
+go
+
+atomicfluct out new_rmsf-pro.agr  :2pro&!@H=
+go
+
+atomicfluct out new_backbone-atoms.agr  :1&!@H=  
+go
+
+atomicfluct out new_back-residue-atoms.agr  :1&!@H=  byres
+go
+
+hbond All out new_All.hbvtime.dat solventdonor :WAT solventacceptor :WAT@O \
+  avgout new_All.UU.avg.dat solvout new_All.UV.avg.dat bridgeout new_All.bridge.avg.dat
+
+go
+
