@@ -8,7 +8,7 @@ do
      j=`echo ${id:0:4}`
      md_name2=${j}_2a
      cd   $md_name2
-     lig_name=${id}
+     lig_name=${id}  # ligand file name
 #     pro_name='clean.pdb'  # protein file name
 #     reduce -Trim $pro_name  > clean.pdb  # remove hydrogens of protein
      antechamber -i $lig_name  -fi pdb -o lig.mol2 -fo mol2 -c bcc -s 2
