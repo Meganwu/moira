@@ -139,8 +139,8 @@ def write_information():
     #    content.write('pdbid: %s \t ion num: %s \t ion: %s \t aa num: %s \t aa: %s \n' % (i,str(ions_num),str(ions),str(aa_num),str(aa)))
     os.chdir('/data/wunian/master-github/md-ml-nian/PL-refine-analysis')
     
-
-write_information()
+if __name__=='__main__': 
+   write_information()
 
 
 
