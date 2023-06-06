@@ -35,6 +35,10 @@ do
   sed -i 's/lig_stop/'"$ligsec"'/g' extract_coords.mmpbsa
   sed -i 's/pro_start/'"$prostart"'/g' extract_coords.mmpbsa
   sed -i 's/pro_end/'"$proend"'/g' extract_coords.mmpbsa
+  
+  cpptraj   script_traj
+  mm_pbsa.pl extract_coords.mmpbsa > extract_coords.log
+  mm_pbsa.pl binding_energy.mmpbsa > binding_energy.log
 
 
   cd   /data/mdml/neutral_collection/neutral_2a 
