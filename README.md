@@ -1,6 +1,8 @@
 # moira
 RMSD, MMPBSA, PLIP analyses for molecular dynamic trajectory
 
+<img src="./workflow.png" alt="Workflow" style="width:90%;">
+
 Getting started
 1. Install Amber 20
 2. Install environments
